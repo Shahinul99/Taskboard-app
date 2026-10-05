@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Taskboard</title>
+
+
+    <style>
+        :root {
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            --bg: #eef2f0;
+            --card: #fbfdfc;
+            --ink: #1d2b2a;
+            --muted: #68797a;
+            --line: #cfdad7;
+            --accent: #2f6f8f;
+            --accent-ink: #fff;
+            --high: #b3412f;
+            --med: #b8862b;
+            --low: #4f8a6a;
+        }
+
+        @media (prefers-color-scheme:dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #121a1a;
+                --card: #1a2524;
+                --ink: #e4eeec;
+                --muted: #8fa3a1;
+                --line: #2b3a39;
+                --accent: #6bb3d3;
+                --accent-ink: #0d1a1a;
+                --high: #e07a67;
+                --med: #d9aa55;
+                --low: #7cc29c;
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg: #121a1a;
+            --card: #1a2524;
+            --ink: #e4eeec;
+            --muted: #8fa3a1;
+            --line: #2b3a39;
+            --accent: #6bb3d3;
+            --accent-ink: #0d1a1a;
+            --high: #e07a67;
+            --med: #d9aa55;
+            --low: #7cc29c;
+        }
+
+        html {
+            scroll-padding-top: env(safe-area-inset-top, 0px)
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 16px/1.5 "Avenir Next", "Segoe UI", system-ui, sans-serif
+        }
+
+        main {
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 28px 16px 48px
+        }
+
+        h1 {
+            font: 700 2.2rem/1.1 Georgia, "Times New Roman", serif;
+            margin: 0 0 4px;
+            letter-spacing: -.01em
+        }
+
+        .sub {
+            color: var(--muted);
+            margin: 0 0 20px
+        }
+
+        form {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px
+        }
+
+        input[type=text] {
+            flex: 1 1 200px;
+            min-width: 0;
+            padding: 11px 12px;
+            font: inherit;
+            color: var(--ink);
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 8px
+        }
+
+        select {
+            padding: 11px 8px;
+            font: inherit;
+            color: var(--ink);
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 8px
+        }
+
+        button {
+            font: inherit;
+            cursor: pointer;
+            color: var(--ink);
+            background: none;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 8px 12px
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: var(--accent-ink);
+            border-color: var(--accent);
+            font-weight: 600
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px
+        }
+
+        .filters {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px
+        }
+
+        .filters button[aria-pressed=true] {
+            background: var(--ink);
+            color: var(--bg);
+            border-color: var(--ink)
+        }
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 8px
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-left: 5px solid var(--low);
+            border-radius: 8px;
+            padding: 10px 12px
+        }
+
+        li[data-p=high] {
+            border-left-color: var(--high)
+        }
+
+        li[data-p=medium] {
+            border-left-color: var(--med)
+        }
+
+        li input[type=checkbox] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent);
+            flex: none
+        }
+
+        .title {
+            flex: 1;
+            min-width: 0;
+            overflow-wrap: anywhere;
+            cursor: text
+        }
+
+        li.done .title {
+            text-decoration: line-through;
+            color: var(--muted)
+        }
+
+        .edit {
+            flex: 1;
+            min-width: 0;
+            padding: 6px 8px;
+            font: inherit;
+            color: var(--ink);
+            background: var(--bg);
+            border: 1px solid var(--accent);
+            border-radius: 6px
+        }
+
+        .del {
+            padding: 4px 9px;
+            color: var(--muted)
+        }
+
+        .empty {
+            color: var(--muted);
+            text-align: center;
+            padding: 28px 0
+        }
+
+        footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            color: var(--muted);
+            gap: 8px
+        }
+
+        @media (prefers-reduced-motion:no-preference) {
+            li {
+                animation: in .18s ease-out
+            }
+
+            @keyframes in {
+                from {
+                    opacity: 0;
+                    transform: translateY(4px)
+                }
+
+                to {
+                    opacity: 1;
+                    transform: none
+                }
+            }
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <main id="app"></main>
+    <script>
+
+        const KEY = "taskboard.v1";
+        let tasks = [], filter = "all", editingId = null;
+
+        try { tasks = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { tasks = []; }
+        const save = () => { try { localStorage.setItem(KEY, JSON.stringify(tasks)); } catch (e) { } };
+
+
+        function h(tag, props = {}, ...kids) {
+            const el = document.createElement(tag);
+            for (const [k, v] of Object.entries(props)) {
+                if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+                else if (k === "dataset") Object.assign(el.dataset, v);
+                else if (k in el) el[k] = v;
+                else el.setAttribute(k, v);
+            }
+            el.append(...kids.flat().filter(Boolean));
+            return el;
+        }
+
+        const app = document.getElementById("app");
+        const titleInput = h("input", { type: "text", placeholder: "What needs doing?", maxLength: 120, "aria-label": "New task" });
+        const prioritySel = h("select", { "aria-label": "Priority" },
+            ...["high", "medium", "low"].map(p => h("option", { value: p, selected: p === "medium" }, p[0].toUpperCase() + p.slice(1))));
+        const form = h("form", {
+            onsubmit: e => {
+                e.preventDefault();
+                const text = titleInput.value.trim();
+                if (!text) { titleInput.focus(); return; }
+                tasks.unshift({ id: Date.now(), text, priority: prioritySel.value, done: false });
+                titleInput.value = ""; save(); render();
+            }
+        }, titleInput, prioritySel, h("button", { type: "submit", className: "primary" }, "Add task"));
+
+        const filterBar = h("div", { className: "filters", role: "group", "aria-label": "Filter tasks" },
+            ...["all", "active", "done"].map(f => h("button", {
+                type: "button", dataset: { f }, onclick: () => { filter = f; render(); }
+            }, f[0].toUpperCase() + f.slice(1))));
+
+        const list = h("ul");
+        const count = h("span");
+        const clearBtn = h("button", {
+            type: "button", onclick: () => {
+                tasks = tasks.filter(t => !t.done); save(); render();
+            }
+        }, "Clear completed");
+
+        app.append(
+            h("h1", {}, "Taskboard"),
+            h("p", { className: "sub" }, "Double-click a task to rename it."),
+            form, filterBar, list, h("footer", {}, count, clearBtn)
+        );
+
+        function taskItem(t) {
+            const title = editingId === t.id
+                ? h("input", {
+                    className: "edit", value: t.text, maxLength: 120, "aria-label": "Edit task",
+                    onkeydown: e => {
+                        if (e.key === "Enter") finishEdit(t, e.target.value);
+                        if (e.key === "Escape") { editingId = null; render(); }
+                    },
+                    onblur: e => { if (editingId === t.id) finishEdit(t, e.target.value); }
+                })
+                : h("span", {
+                    className: "title", title: "Double-click to edit",
+                    ondblclick: () => { editingId = t.id; render(); }
+                }, t.text);
+
+            return h("li", { className: t.done ? "done" : "", dataset: { p: t.priority } },
+                h("input", {
+                    type: "checkbox", checked: t.done, "aria-label": "Mark done",
+                    onchange: e => { t.done = e.target.checked; save(); render(); }
+                }),
+                title,
+                h("button", {
+                    type: "button", className: "del", "aria-label": "Delete task",
+                    onclick: () => { tasks = tasks.filter(x => x.id !== t.id); save(); render(); }
+                }, "✕")
+            );
+        }
+
+        function finishEdit(t, value) {
+            const v = value.trim();
+            if (v) t.text = v;
+            editingId = null; save(); render();
+        }
+
+        function render() {
+            const shown = tasks.filter(t => filter === "all" || (filter === "done" ? t.done : !t.done));
+            list.replaceChildren(...(shown.length
+                ? shown.map(taskItem)
+                : [h("li", { className: "empty", style: "border-left-color:var(--line);justify-content:center" },
+                    tasks.length ? "Nothing in this view." : "No tasks yet. Add your first one above.")]));
+            filterBar.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.f === filter));
+            const left = tasks.filter(t => !t.done).length;
+            count.textContent = left + (left === 1 ? " task left" : " tasks left");
+            clearBtn.hidden = !tasks.some(t => t.done);
+            const edit = list.querySelector(".edit");
+            if (edit) { edit.focus(); edit.select(); }
+        }
+        render();
+    </script>
+</body>
+
+</html>
